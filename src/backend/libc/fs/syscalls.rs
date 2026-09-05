@@ -327,7 +327,7 @@ pub(crate) fn getdents_uninit(
     unsafe {
         ret_usize(getdents64(
             borrowed_fd(fd),
-            buf.as_mut_ptr().cast::<c::c_void>(),
+            buf.as_mut_ptr().cast(),
             buf.len(),
         ))
     }
@@ -2377,7 +2377,7 @@ pub(crate) unsafe fn getxattr(
         ret_usize(c::getxattr(
             path.as_ptr(),
             name.as_ptr(),
-            value.0.cast::<c::c_void>(),
+            value.0.cast(),
             value.1,
         ))
     }
@@ -2389,7 +2389,7 @@ pub(crate) unsafe fn getxattr(
         let ptr = if value.1 == 0 {
             core::ptr::null_mut()
         } else {
-            value.0.cast::<c::c_void>()
+            value.0.cast()
         };
         ret_usize(c::getxattr(
             path.as_ptr(),
@@ -2413,7 +2413,7 @@ pub(crate) unsafe fn lgetxattr(
         ret_usize(c::lgetxattr(
             path.as_ptr(),
             name.as_ptr(),
-            value.0.cast::<c::c_void>(),
+            value.0.cast(),
             value.1,
         ))
     }
@@ -2425,7 +2425,7 @@ pub(crate) unsafe fn lgetxattr(
         let ptr = if value.1 == 0 {
             core::ptr::null_mut()
         } else {
-            value.0.cast::<c::c_void>()
+            value.0.cast()
         };
 
         ret_usize(c::getxattr(
@@ -2450,7 +2450,7 @@ pub(crate) unsafe fn fgetxattr(
         ret_usize(c::fgetxattr(
             borrowed_fd(fd),
             name.as_ptr(),
-            value.0.cast::<c::c_void>(),
+            value.0.cast(),
             value.1,
         ))
     }
@@ -2462,7 +2462,7 @@ pub(crate) unsafe fn fgetxattr(
         let ptr = if value.1 == 0 {
             core::ptr::null_mut()
         } else {
-            value.0.cast::<c::c_void>()
+            value.0.cast()
         };
         ret_usize(c::fgetxattr(
             borrowed_fd(fd),
@@ -2487,7 +2487,7 @@ pub(crate) fn setxattr(
         ret(c::setxattr(
             path.as_ptr(),
             name.as_ptr(),
-            value.as_ptr().cast::<c::c_void>(),
+            value.as_ptr().cast(),
             value.len(),
             flags.bits() as i32,
         ))
@@ -2498,7 +2498,7 @@ pub(crate) fn setxattr(
         ret(c::setxattr(
             path.as_ptr(),
             name.as_ptr(),
-            value.as_ptr().cast::<c::c_void>(),
+            value.as_ptr().cast(),
             value.len(),
             0,
             flags.bits() as i32,
@@ -2518,7 +2518,7 @@ pub(crate) fn lsetxattr(
         ret(c::lsetxattr(
             path.as_ptr(),
             name.as_ptr(),
-            value.as_ptr().cast::<c::c_void>(),
+            value.as_ptr().cast(),
             value.len(),
             flags.bits() as i32,
         ))
@@ -2529,7 +2529,7 @@ pub(crate) fn lsetxattr(
         ret(c::setxattr(
             path.as_ptr(),
             name.as_ptr(),
-            value.as_ptr().cast::<c::c_void>(),
+            value.as_ptr().cast(),
             value.len(),
             0,
             flags.bits() as i32 | c::XATTR_NOFOLLOW,
@@ -2549,7 +2549,7 @@ pub(crate) fn fsetxattr(
         ret(c::fsetxattr(
             borrowed_fd(fd),
             name.as_ptr(),
-            value.as_ptr().cast::<c::c_void>(),
+            value.as_ptr().cast(),
             value.len(),
             flags.bits() as i32,
         ))
@@ -2560,7 +2560,7 @@ pub(crate) fn fsetxattr(
         ret(c::fsetxattr(
             borrowed_fd(fd),
             name.as_ptr(),
-            value.as_ptr().cast::<c::c_void>(),
+            value.as_ptr().cast(),
             value.len(),
             0,
             flags.bits() as i32,
@@ -2572,21 +2572,12 @@ pub(crate) fn fsetxattr(
 pub(crate) unsafe fn listxattr(path: &CStr, list: (*mut u8, usize)) -> io::Result<usize> {
     #[cfg(not(apple))]
     {
-        ret_usize(c::listxattr(
-            path.as_ptr(),
-            list.0.cast::<ffi::c_char>(),
-            list.1,
-        ))
+        ret_usize(c::listxattr(path.as_ptr(), list.0.cast(), list.1))
     }
 
     #[cfg(apple)]
     {
-        ret_usize(c::listxattr(
-            path.as_ptr(),
-            list.0.cast::<ffi::c_char>(),
-            list.1,
-            0,
-        ))
+        ret_usize(c::listxattr(path.as_ptr(), list.0.cast(), list.1, 0))
     }
 }
 
@@ -2594,18 +2585,14 @@ pub(crate) unsafe fn listxattr(path: &CStr, list: (*mut u8, usize)) -> io::Resul
 pub(crate) unsafe fn llistxattr(path: &CStr, list: (*mut u8, usize)) -> io::Result<usize> {
     #[cfg(not(apple))]
     {
-        ret_usize(c::llistxattr(
-            path.as_ptr(),
-            list.0.cast::<ffi::c_char>(),
-            list.1,
-        ))
+        ret_usize(c::llistxattr(path.as_ptr(), list.0.cast(), list.1))
     }
 
     #[cfg(apple)]
     {
         ret_usize(c::listxattr(
             path.as_ptr(),
-            list.0.cast::<ffi::c_char>(),
+            list.0.cast(),
             list.1,
             c::XATTR_NOFOLLOW,
         ))
@@ -2618,12 +2605,12 @@ pub(crate) unsafe fn flistxattr(fd: BorrowedFd<'_>, list: (*mut u8, usize)) -> i
 
     #[cfg(not(apple))]
     {
-        ret_usize(c::flistxattr(fd, list.0.cast::<ffi::c_char>(), list.1))
+        ret_usize(c::flistxattr(fd, list.0.cast(), list.1))
     }
 
     #[cfg(apple)]
     {
-        ret_usize(c::flistxattr(fd, list.0.cast::<ffi::c_char>(), list.1, 0))
+        ret_usize(c::flistxattr(fd, list.0.cast(), list.1, 0))
     }
 }
 
