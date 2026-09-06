@@ -1116,6 +1116,7 @@ pub mod ipproto {
 }
 
 /// `SYSPROTO_*` constants.
+#[cfg(target_os = "macos")]
 pub mod sysproto {
     #[cfg(apple)]
     use {
@@ -1124,11 +1125,9 @@ pub mod sysproto {
     };
 
     /// `SYSPROTO_EVENT`
-    #[cfg(apple)]
     pub const EVENT: Protocol = Protocol(new_raw_protocol(c::SYSPROTO_EVENT as _));
 
     /// `SYSPROTO_CONTROL`
-    #[cfg(apple)]
     pub const CONTROL: Protocol = Protocol(new_raw_protocol(c::SYSPROTO_CONTROL as _));
 }
 
