@@ -740,7 +740,7 @@ impl AddressFamily {
     #[cfg(target_os = "freebsd")]
     pub const SLOW: Self = Self(c::AF_SLOW as _);
     /// `AF_SYS_CONTROL`
-    #[cfg(apple)]
+    #[cfg(target_os = "macos")]
     pub const SYS_CONTROL: Self = Self(c::AF_SYS_CONTROL as _);
     /// `AF_SYSTEM`
     #[cfg(apple)]
